@@ -10,6 +10,12 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0; /* Cor de fundo */
+      color: #333; /* Cor do texto padrão */
     }
 
     .row {
@@ -25,12 +31,31 @@
       text-align: center;
       box-sizing: border-box;
       margin: 10px;
+      background-color: #fff; /* Cor de fundo das colunas */
+      border-radius: 8px; /* Borda arredondada */
+      transition: background-color 0.3s ease; /* Transição suave da cor de fundo */
+    }
+
+    .column:hover {
+      background-color: #e0e0e0; /* Cor de fundo ao passar o mouse */
     }
 
     .sub-section {
       margin-top: 10px;
       text-align: center;
+      color: #555; /* Cor do texto dentro das colunas */
     }
+
+    .sub-section a {
+      color: #007bff; /* Cor do link */
+      text-decoration: none;
+      transition: color 0.3s ease; /* Transição suave da cor do link */
+    }
+
+    .sub-section a:hover {
+      color: #0056b3; /* Cor do link ao passar o mouse */
+    }
+
   </style>
 </head>
 <body>
