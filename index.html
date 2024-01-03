@@ -35,50 +35,52 @@
       justify-content: center;
     }
 
-    .column {
-      flex: 1;
-      max-width: 300px;
-      width: 100%;
-      padding: 20px;
-      text-align: center;
-      box-sizing: border-box;
-      margin: 10px;
-      background-color: #FFFFFF;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
-    }
+.column {
+  flex: 1;
+  max-width: 300px;
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  box-sizing: border-box;
+  margin: 10px;
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  font-family: Arial Black, sans-serif; /* Substitua 'NomeDaSuaNovaFonte' pelo nome da nova fonte desejada */
+}
 
-    .column:hover {
-      background-color: #FFA500;
-    }
+.column h2 {
+  font-size: 16px;
+  font-family: Arial Black, sans-serif; /* Substitua 'NomeDaSuaNovaFonte' pelo nome da nova fonte desejada */
+}
+
+.sub-section {
+  margin-top: 10px;
+  text-align: center;
+  color: #000000;
+  font-size: 16px;
+  flex-grow: 1;
+}
+
+.sub-section::before {
+  content: "•";
+  color: #007bff;
+  font-size: 20px;
+  margin-right: 5px;
+}
+
+.sub-section a {
+  color: #000000;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-family: 'Times New Roman', sans-serif; /* Substitua 'NomeDaSuaNovaFonte' pelo nome da nova fonte desejada */
+}
+
+.sub-section a:hover {
+  color: #005ca9;
+}
 
 
-    }
-
-    .sub-section {
-      margin-top: 10px;
-      text-align: center;
-      color: #000000;
-      font-size: 16px;
-      flex-grow: 1;
-    }
-
-    .sub-section::before {
-      content: "•";
-      color: #007bff;
-      font-size: 20px;
-      margin-right: 5px;
-    }
-
-    .sub-section a {
-      color: #000000;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    .sub-section a:hover {
-      color: #005ca9;
-    }
   </style>
 </head>
 <body>
