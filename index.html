@@ -167,176 +167,217 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jogo da Velha</title>
+  <title>Snake Game</title>
   <style>
-    #game {
-      text-align: center;
-      margin-top: 50px;
-    }
-
-    #board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-gap: 5px;
-      margin-bottom: 10px;
-    }
-
-    .cell {
-      width: 100px;
-      height: 100px;
-      background-color: lightgray;
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 24px;
-      cursor: pointer;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
     }
 
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
+    canvas {
+      border: 1px solid black;
+    }
+
+    #highScores {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #highScores ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #highScores ul li {
+      margin-bottom: 5px;
     }
   </style>
 </head>
 <body>
-
-<div id="game">
-  <h2>Jogo da Velha</h2>
-  <div id="board">
-    <div class="cell" onclick="makeMove(0)"></div>
-    <div class="cell" onclick="makeMove(1)"></div>
-    <div class="cell" onclick="makeMove(2)"></div>
-    <div class="cell" onclick="makeMove(3)"></div>
-    <div class="cell" onclick="makeMove(4)"></div>
-    <div class="cell" onclick="makeMove(5)"></div>
-    <div class="cell" onclick="makeMove(6)"></div>
-    <div class="cell" onclick="makeMove(7)"></div>
-    <div class="cell" onclick="makeMove(8)"></div>
+  <h1>Welcome to Snake Game</h1>
+  <input type="text" id="playerNameInput" placeholder="Enter your name">
+  <button onclick="startGame()">Start Game</button>
+  <canvas id="gameCanvas" width="400" height="400" style="display: none;"></canvas>
+  <div id="highScores">
+    <h2>High Scores</h2>
+    <ul id="highScoresList">
+    </ul>
   </div>
-  <div id="status"></div>
-  <button onclick="resetGame()">Reiniciar Jogo</button>
-</div>
 
-<script>
-  let currentPlayer = 'X';
-  let gameBoard = ['', '', '', '', '', '', '', '', ''];
-  const winCombos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ];
+  <script>
+    let playerName = '';
 
-  function makeMove(index) {
-    if (gameBoard[index] === '' && !checkWin() && !checkDraw()) {
-      gameBoard[index] = currentPlayer;
-      render();
-      if (checkWin()) {
-        document.getElementById('status').innerText = `O jogador ${currentPlayer} ganhou!`;
-        document.getElementById('status').style.color = 'white';
+    function startGame() {
+      playerName = document.getElementById('playerNameInput').value;
+      if (!playerName) {
+        alert('Please enter your name to start the game!');
         return;
       }
-      if (checkDraw()) {
-        document.getElementById('status').innerText = 'Empate!';
-        document.getElementById('status').style.color = 'orange';
-        return;
-      }
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      if (currentPlayer === 'O') {
-        setTimeout(makeComputerMove, 500);
-      }
-    }
-  }
 
-  function makeComputerMove() {
-    let bestScore = -Infinity;
-    let move;
-    for (let i = 0; i < gameBoard.length; i++) {
-      if (gameBoard[i] === '') {
-        gameBoard[i] = 'O';
-        let score = minimax(gameBoard, 0, false);
-        gameBoard[i] = '';
-        if (score > bestScore) {
-          bestScore = score;
-          move = i;
+      document.getElementById('playerNameInput').disabled = true;
+      document.getElementById('playerNameInput').style.display = 'none';
+      document.querySelector('button').style.display = 'none';
+      document.getElementById('gameCanvas').style.display = 'block';
+
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const snakeSize = 20;
+      const gridSize = 20;
+      let snake = [{x: 10, y: 10}];
+      let dx = 0;
+      let dy = 0;
+      let food = {x: 15, y: 15};
+      let score = 0;
+
+      const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+
+      document.addEventListener('keydown', changeDirection);
+
+      function main() {
+        if (gameOver()) {
+          saveHighScore(playerName, score);
+          updateHighScores();
+          alert('Game Over!');
+          resetGame();
+          return;
+        }
+
+        setTimeout(function onTick() {
+          clearCanvas();
+          drawFood();
+          moveSnake();
+          drawSnake();
+          drawScore();
+          main();
+        }, 100);
+      }
+
+      function clearCanvas() {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function drawSnake() {
+        snake.forEach(drawSnakePart);
+      }
+
+      function drawSnakePart(snakePart) {
+        ctx.fillStyle = 'green';
+        ctx.fillRect(snakePart.x * gridSize, snakePart.y * gridSize, snakeSize, snakeSize);
+      }
+
+      function drawFood() {
+        ctx.fillStyle = 'red';
+        ctx.fillRect(food.x * gridSize, food.y * gridSize, snakeSize, snakeSize);
+      }
+
+      function moveSnake() {
+        const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) {
+          generateFood();
+          score += 10;
+        } else {
+          snake.pop();
         }
       }
-    }
-    makeMove(move);
-  }
 
-  function minimax(board, depth, isMaximizing) {
-    let result = checkWinner(board);
-    if (result !== null) {
-      return result === 'O' ? 10 - depth : result === 'X' ? depth - 10 : 0;
-    }
-    if (isMaximizing) {
-      let bestScore = -Infinity;
-      for (let i = 0; i < board.length; i++) {
-        if (board[i] === '') {
-          board[i] = 'O';
-          let score = minimax(board, depth + 1, false);
-          board[i] = '';
-          bestScore = Math.max(score, bestScore);
+      function changeDirection(event) {
+        const LEFT_KEY = 37;
+        const RIGHT_KEY = 39;
+        const UP_KEY = 38;
+        const DOWN_KEY = 40;
+
+        const keyPressed = event.keyCode;
+        const goingUp = dy === -1;
+        const goingDown = dy === 1;
+        const goingRight = dx === 1;
+        const goingLeft = dx === -1;
+
+        if (keyPressed === LEFT_KEY && !goingRight) {
+          dx = -1;
+          dy = 0;
+        }
+
+        if (keyPressed === UP_KEY && !goingDown) {
+          dx = 0;
+          dy = -1;
+        }
+
+        if (keyPressed === RIGHT_KEY && !goingLeft) {
+          dx = 1;
+          dy = 0;
+        }
+
+        if (keyPressed === DOWN_KEY && !goingUp) {
+          dx = 0;
+          dy = 1;
         }
       }
-      return bestScore;
-    } else {
-      let bestScore = Infinity;
-      for (let i = 0; i < board.length; i++) {
-        if (board[i] === '') {
-          board[i] = 'X';
-          let score = minimax(board, depth + 1, true);
-          board[i] = '';
-          bestScore = Math.min(score, bestScore);
+
+      function generateFood() {
+        const newX = Math.floor(Math.random() * gridSize);
+        const newY = Math.floor(Math.random() * gridSize);
+        food = {x: newX, y: newY};
+      }
+
+      function gameOver() {
+        const hitLeftWall = snake[0].x < 0;
+        const hitRightWall = snake[0].x > canvas.width / gridSize - 1;
+        const hitTopWall = snake[0].y < 0;
+        const hitBottomWall = snake[0].y > canvas.height / gridSize - 1;
+
+        return hitLeftWall || hitRightWall || hitTopWall || hitBottomWall || checkSnakeCollision();
+      }
+
+      function checkSnakeCollision() {
+        for (let i = 1; i < snake.length; i++) {
+          if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) {
+            return true;
+          }
         }
+        return false;
       }
-      return bestScore;
-    }
-  }
 
-  function checkWinner(board) {
-    for (let i = 0; i < winCombos.length; i++) {
-      const [a, b, c] = winCombos[i];
-      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return board[a];
+      function drawScore() {
+        ctx.fillStyle = 'black';
+        ctx.font = '16px Arial';
+        ctx.fillText('Score: ' + score, 10, 20);
       }
+
+      function saveHighScore(playerName, score) {
+        const playerScore = { name: playerName, score: score };
+        highScores.push(playerScore);
+        highScores.sort((a, b) => b.score - a.score);
+        highScores.splice(3); // Mantém apenas os 3 melhores scores
+        localStorage.setItem('highScores', JSON.stringify(highScores));
+      }
+
+      function updateHighScores() {
+        const highScoresList = document.getElementById('highScoresList');
+        highScoresList.innerHTML = '';
+        highScores.forEach((playerScore, index) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `#${index + 1}: ${playerScore.name} - ${playerScore.score}`;
+          highScoresList.appendChild(listItem);
+        });
+      }
+
+      main();
     }
-    return null;
-  }
 
-  function render() {
-    gameBoard.forEach((cell, index) => {
-      document.getElementsByClassName('cell')[index].innerText = cell;
-    });
-  }
-
-  function checkWin() {
-    return checkWinner(gameBoard) !== null;
-  }
-
-  function checkDraw() {
-    return gameBoard.every(cell => cell !== '') && !checkWin();
-  }
-
-  function resetGame() {
-    currentPlayer = 'X';
-    gameBoard = ['', '', '', '', '', '', '', '', ''];
-    document.getElementById('status').innerText = '';
-    render();
-  }
-</script>
-
-</body>
-</html>
-
+    function resetGame() {
+      document.getElementById('playerNameInput').value = '';
+      document.getElementById('playerNameInput').disabled = false;
+      document.getElementById('playerNameInput').style.display = 'block';
+      document.querySelector('button').style.display = 'block';
+      document.getElementById('gameCanvas').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
