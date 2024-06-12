@@ -162,6 +162,181 @@
  <div class="sub-section"><a href="https://atento.edusense.com.br/semparar/index.php/wiki/solicitar-incluir-ocorrencia-ocorrencia-generica" target="_blank">Abrir Ocorrência Genérica</a></div>
     </div>
   </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo da Velha</title>
+  <style>
+    #game {
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: lightgray;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game">
+  <h2>Jogo da Velha</h2>
+  <div id="board">
+    <div class="cell" onclick="makeMove(0)"></div>
+    <div class="cell" onclick="makeMove(1)"></div>
+    <div class="cell" onclick="makeMove(2)"></div>
+    <div class="cell" onclick="makeMove(3)"></div>
+    <div class="cell" onclick="makeMove(4)"></div>
+    <div class="cell" onclick="makeMove(5)"></div>
+    <div class="cell" onclick="makeMove(6)"></div>
+    <div class="cell" onclick="makeMove(7)"></div>
+    <div class="cell" onclick="makeMove(8)"></div>
+  </div>
+  <div id="status"></div>
+  <button onclick="resetGame()">Reiniciar Jogo</button>
+</div>
+
+<script>
+  let currentPlayer = 'X';
+  let gameBoard = ['', '', '', '', '', '', '', '', ''];
+  const winCombos = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+
+  function makeMove(index) {
+    if (gameBoard[index] === '' && !checkWin() && !checkDraw()) {
+      gameBoard[index] = currentPlayer;
+      render();
+      if (checkWin()) {
+        document.getElementById('status').innerText = `O jogador ${currentPlayer} ganhou!`;
+        document.getElementById('status').style.color = 'green';
+        return;
+      }
+      if (checkDraw()) {
+        document.getElementById('status').innerText = 'Empate!';
+        document.getElementById('status').style.color = 'orange';
+        return;
+      }
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      if (currentPlayer === 'O') {
+        setTimeout(makeComputerMove, 500);
+      }
+    }
+  }
+
+  function makeComputerMove() {
+    let bestScore = -Infinity;
+    let move;
+    for (let i = 0; i < gameBoard.length; i++) {
+      if (gameBoard[i] === '') {
+        gameBoard[i] = 'O';
+        let score = minimax(gameBoard, 0, false);
+        gameBoard[i] = '';
+        if (score > bestScore) {
+          bestScore = score;
+          move = i;
+        }
+      }
+    }
+    makeMove(move);
+  }
+
+  function minimax(board, depth, isMaximizing) {
+    let result = checkWinner(board);
+    if (result !== null) {
+      return result === 'O' ? 10 - depth : result === 'X' ? depth - 10 : 0;
+    }
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < board.length; i++) {
+        if (board[i] === '') {
+          board[i] = 'O';
+          let score = minimax(board, depth + 1, false);
+          board[i] = '';
+          bestScore = Math.max(score, bestScore);
+        }
+      }
+      return bestScore;
+    } else {
+      let bestScore = Infinity;
+      for (let i = 0; i < board.length; i++) {
+        if (board[i] === '') {
+          board[i] = 'X';
+          let score = minimax(board, depth + 1, true);
+          board[i] = '';
+          bestScore = Math.min(score, bestScore);
+        }
+      }
+      return bestScore;
+    }
+  }
+
+  function checkWinner(board) {
+    for (let i = 0; i < winCombos.length; i++) {
+      const [a, b, c] = winCombos[i];
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+        return board[a];
+      }
+    }
+    return null;
+  }
+
+  function render() {
+    gameBoard.forEach((cell, index) => {
+      document.getElementsByClassName('cell')[index].innerText = cell;
+    });
+  }
+
+  function checkWin() {
+    return checkWinner(gameBoard) !== null;
+  }
+
+  function checkDraw() {
+    return gameBoard.every(cell => cell !== '') && !checkWin();
+  }
+
+  function resetGame() {
+    currentPlayer = 'X';
+    gameBoard = ['', '', '', '', '', '', '', '', ''];
+    document.getElementById('status').innerText = '';
+    render();
+  }
+</script>
+
+</body>
+</html>
 
 </body>
 </html>
